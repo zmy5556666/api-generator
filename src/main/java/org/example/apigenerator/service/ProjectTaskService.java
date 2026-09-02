@@ -53,4 +53,25 @@ public class ProjectTaskService {
     public ApiProjectTask getById(Long taskId) {
         return taskMapper.selectById(taskId);
     }
+
+    /**
+     * 更新任务的原始 PRD 文本
+     */
+    public void updateTaskPrd(Long taskId, String prdText) {
+        ApiProjectTask task = taskMapper.selectById(taskId);
+        if (task != null) {
+            task.setOriginalPrd(prdText);
+            taskMapper.updateById(task);
+        }
+    }
+
+    /**
+     * 同步更新名字
+     */
+    public void updateProjectName(Long taskId, String newName) {
+        ApiProjectTask task = new ApiProjectTask();
+        task.setId(taskId);
+        task.setProjectName(newName);
+        taskMapper.updateById(task);
+    }
 }

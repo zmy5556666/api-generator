@@ -46,6 +46,8 @@ public class ApiProjectService {
      */
     @Transactional
     public void processPrdAndSave(Long taskId, String prdText) {
+        //收到前端发来的 PRD 后，立刻更新到主表中
+        projectTaskService.updateTaskPrd(taskId, prdText);
         // 前置校验
         ApiProjectTask task = projectTaskService.getById(taskId);
         if (task == null) {
@@ -106,7 +108,7 @@ public class ApiProjectService {
     }
 
     /**
-     * 7. 核心流 C：安全级联删除指定历史记录
+     * 7. 辅助流：安全级联删除指定历史记录
      */
     @Transactional
     public void deleteTask(Long taskId) {
@@ -121,4 +123,10 @@ public class ApiProjectService {
         projectTaskService.deleteTask(taskId);
     }
 
+    /**
+     * 8. 辅助流：修改项目名称
+     */
+    public void renameProject(Long taskId, String newName) {
+        projectTaskService.updateProjectName(taskId, newName);
+    }
 }

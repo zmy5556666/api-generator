@@ -119,4 +119,14 @@ public class ApiProjectController {
         apiProjectService.deleteTask(taskId);
         return ResponseEntity.ok("删除成功");
     }
+
+    /**
+     * 重命名项目
+     */
+    @PutMapping("/{taskId}/name")
+    public ResponseEntity<String> renameProject(@PathVariable Long taskId, @RequestParam String newName) {
+        // 调用总指挥的方法，而不是底层的 taskService
+        apiProjectService.renameProject(taskId, newName);
+        return ResponseEntity.ok("重命名成功");
+    }
 }
