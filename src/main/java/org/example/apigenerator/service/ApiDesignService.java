@@ -82,4 +82,25 @@ public class ApiDesignService {
                 designEntity.getGeneratedControllerCode()
         );
     }
+
+    /**
+     * 级联删除 API 设计及其关联的单接口记录
+     */
+    @Transactional
+    public void deleteByTaskId(Long taskId) {
+        // 1. 先查出这个任务对应的设计报告（为了拿到主键 ID 去删孙子表）
+        QueryWrapper<ApiDesignResultEntity> designQuery = new QueryWrapper<>();
+        designQuery.eq("task_id", taskId);
+        ApiDesignResultEntity designEntity = apiDesignResultMapper.selectOne(designQuery);
+
+        if (designEntity != null) {
+            // 2. 先删孙子表：删除关联的接口记录
+            QueryWrapper<ApiEndpointEntity> endpointQuery = new QueryWrapper<>();
+            endpointQuery.eq("design_result_id", designEntity.getId());
+            apiEndpointMapper.delete(endpointQuery);
+
+            // 3. 再删子表：删除设计总报告
+            apiDesignResultMapper.deleteById(designEntity.getId());
+        }
+    }
 }

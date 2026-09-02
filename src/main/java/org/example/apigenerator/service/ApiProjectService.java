@@ -9,6 +9,8 @@ import org.example.apigenerator.model.PrdAnalysisResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class ApiProjectService {
 
@@ -95,4 +97,28 @@ public class ApiProjectService {
     public ApiDesignResult getApiDesign(Long taskId) {
         return apiDesignService.getDesignByTaskId(taskId);
     }
+
+    /**
+     * 6. 辅助流：获取所有历史记录
+     */
+    public List<ApiProjectTask> getAllHistory() {
+        return projectTaskService.getAllTasks();
+    }
+
+    /**
+     * 7. 核心流 C：安全级联删除指定历史记录
+     */
+    @Transactional
+    public void deleteTask(Long taskId) {
+        // 按照“先清外围，再清核心”的顺序安全删除：
+        // 1. 呼叫一号服务：清理分析结果表
+        analysisResultService.deleteByTaskId(taskId);
+
+        // 2. 呼叫二号服务：清理设计报告与接口表
+        apiDesignService.deleteByTaskId(taskId);
+
+        // 3. 呼叫主服务：最后删除任务主表
+        projectTaskService.deleteTask(taskId);
+    }
+
 }

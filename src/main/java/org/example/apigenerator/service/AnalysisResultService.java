@@ -36,4 +36,13 @@ public class AnalysisResultService {
         queryWrapper.eq("task_id", taskId);
         return resultMapper.selectOne(queryWrapper);
     }
+
+    /**
+     * 根据 taskId 删除分析结果
+     */
+    public void deleteByTaskId(Long taskId) {
+        QueryWrapper<PrdAnalysisResultEntity> query = new QueryWrapper<>();
+        query.eq("task_id", taskId);
+        resultMapper.delete(query);
+    }
 }

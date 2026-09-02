@@ -3,17 +3,22 @@ package org.example.apigenerator.controller;
 import org.example.apigenerator.dto.PrdAnalyzeRequest;
 import org.example.apigenerator.entity.ApiProjectTask;
 import org.example.apigenerator.entity.PrdAnalysisResultEntity;
+import org.example.apigenerator.model.ApiDesignResult;
 import org.example.apigenerator.service.ApiProjectService;
+import org.example.apigenerator.model.ApiDesignResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.example.apigenerator.model.ApiDesignResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+
 
 @CrossOrigin
 @RestController // 声明这是一个 Web 接口控制器，所有返回值都会自动转换成 JSON
@@ -96,5 +101,22 @@ public class ApiProjectController {
                 .ok()
                 .headers(headers)
                 .body(code.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * 获取所有历史项目列表
+     */
+    @GetMapping("/history")
+    public List<ApiProjectTask> getHistory() {
+        return apiProjectService.getAllHistory();
+    }
+
+    /**
+     * 删除指定历史项目
+     */
+    @DeleteMapping("/{taskId}")
+    public ResponseEntity<String> deleteTask(@PathVariable Long taskId) {
+        apiProjectService.deleteTask(taskId);
+        return ResponseEntity.ok("删除成功");
     }
 }

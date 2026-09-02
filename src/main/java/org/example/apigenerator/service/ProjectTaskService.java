@@ -5,6 +5,9 @@ import org.example.apigenerator.mapper.ApiProjectTaskMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
 @Service
 public class ProjectTaskService {
@@ -15,6 +18,9 @@ public class ProjectTaskService {
         this.taskMapper = taskMapper;
     }
 
+    /**
+     * 创建項目
+     */
     @Transactional
     public ApiProjectTask createProject(String projectName) {
         ApiProjectTask task = new ApiProjectTask();
@@ -26,6 +32,22 @@ public class ProjectTaskService {
 
         taskMapper.insert(task);
         return task;
+    }
+
+    /**
+     * 查询所有历史任务（按时间倒序排，最新的在最上面）
+     */
+    public List<ApiProjectTask> getAllTasks() {
+        QueryWrapper<ApiProjectTask> query = new QueryWrapper<>();
+        query.orderByDesc("create_time");
+        return taskMapper.selectList(query);
+    }
+
+    /**
+     * 根据 ID 删除任务
+     */
+    public void deleteTask(Long taskId) {
+        taskMapper.deleteById(taskId);
     }
 
     public ApiProjectTask getById(Long taskId) {
