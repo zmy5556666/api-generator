@@ -23,7 +23,7 @@ public class AiAgentConfig {
         // 1. 构建智能体 A 专属的模型客户端 (使用独立的 API Key)
         OpenAiChatModel modelA = OpenAiChatModel.builder()
                 .baseUrl("https://api.deepseek.com/v1") // DeepSeek 的 OpenAI 兼容端点
-                .apiKey("agentAKey")
+                .apiKey(agentAKey)
                 .modelName("deepseek-chat")
                 .build();
 
@@ -40,7 +40,7 @@ public class AiAgentConfig {
         // 1. 构建智能体 B 专属的模型客户端
         OpenAiChatModel modelB = OpenAiChatModel.builder()
                 .baseUrl("https://api.deepseek.com/v1")
-                .apiKey("agentBKey")
+                .apiKey(agentBKey)
                 .modelName("deepseek-chat")
                 .build();
 

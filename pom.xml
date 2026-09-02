@@ -81,6 +81,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Swagger 3集成所需springdoc-openapi依賴-->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

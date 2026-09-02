@@ -52,8 +52,8 @@ public class PipelineTest {
 
         System.out.println("\n====== [Phase 2] 智能体 B：接口设计与代码生成中 ======");
         ApiDesignResult apiResult = architect.design(
-                analysis.coreEntities().toString(),
-                analysis.coreActions().toString(),
+                analysis.coreEntities(),
+                analysis.coreActions(),
                 analysis.summary()
         );
 

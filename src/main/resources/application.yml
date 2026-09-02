@@ -22,3 +22,9 @@ ai:
     api-key: ${AGENT_A_KEY:your_local_key_here}
   agent-b:
     api-key: ${AGENT_B_KEY:your_local_key_here}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html # 访问的 UI 路径
+  api-docs:
+    path: /v3/api-docs

@@ -4,6 +4,7 @@ import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
 import org.example.apigenerator.model.ApiDesignResult;
+import java.util.List;
 
 public interface ApiArchitectAgent {
 
@@ -17,8 +18,8 @@ public interface ApiArchitectAgent {
     })
     ApiDesignResult design(
             @UserMessage("核心实体列表: {{entities}}, 核心操作列表: {{actions}}, 需求概述: {{summary}}")
-            @V("entities") String entities,
-            @V("actions") String actions,
+            @V("entities") List<String>entities,
+            @V("actions") List<String> actions,
             @V("summary") String summary
     );
 }
