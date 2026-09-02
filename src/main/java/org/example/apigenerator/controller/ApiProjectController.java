@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import java.nio.charset.StandardCharsets;
 
+@CrossOrigin
 @RestController // 声明这是一个 Web 接口控制器，所有返回值都会自动转换成 JSON
 @RequestMapping("/api/projects") // 规定这个控制器下所有接口的公共路径前缀
 public class ApiProjectController {
