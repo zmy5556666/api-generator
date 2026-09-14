@@ -32,7 +32,7 @@ public class ApiDesignService {
         ApiDesignResultEntity designEntity = new ApiDesignResultEntity();
         designEntity.setTaskId(taskId);
         designEntity.setModuleName(designResult.moduleName());
-        designEntity.setGeneratedControllerCode(designResult.generatedControllerCode());
+        designEntity.setGeneratedFiles(designResult.generatedFiles());
         designEntity.setCreateTime(LocalDateTime.now());
         apiDesignResultMapper.insert(designEntity);
 
@@ -79,7 +79,7 @@ public class ApiDesignService {
         return new ApiDesignResult(
                 designEntity.getModuleName(),
                 endpoints,
-                designEntity.getGeneratedControllerCode()
+                designEntity.getGeneratedFiles()
         );
     }
 

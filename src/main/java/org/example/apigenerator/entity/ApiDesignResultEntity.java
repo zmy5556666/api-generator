@@ -4,11 +4,15 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
+import org.example.apigenerator.model.GeneratedFile;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-@TableName("api_design_result")
+@TableName(value = "api_design_result", autoResultMap = true)
 public class ApiDesignResultEntity {
 
     @TableId(type = IdType.AUTO)
@@ -20,8 +24,8 @@ public class ApiDesignResultEntity {
     @TableField("module_name")
     private String moduleName; // 模块名称
 
-    @TableField("generated_controller_code")
-    private String generatedControllerCode; // 生成的 Spring Boot 源码
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<GeneratedFile> generatedFiles;
 
     @TableField("create_time")
     private LocalDateTime createTime; // 创建时间

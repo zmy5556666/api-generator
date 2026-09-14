@@ -113,10 +113,10 @@ public class ApiProjectService {
     @Transactional
     public void deleteTask(Long taskId) {
         // 按照“先清外围，再清核心”的顺序安全删除：
-        // 1. 呼叫一号服务：清理分析结果表
+        // 1. 先清理分析结果表
         analysisResultService.deleteByTaskId(taskId);
 
-        // 2. 呼叫二号服务：清理设计报告与接口表
+        // 2. 再清理设计报告与接口表
         apiDesignService.deleteByTaskId(taskId);
 
         // 3. 呼叫主服务：最后删除任务主表

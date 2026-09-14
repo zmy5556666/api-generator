@@ -30,7 +30,7 @@ public class AiAgentConfig {
         // 2. 使用 AiServices 动态代理生成接口的实现类
         return AiServices.builder(PrdAnalystAgent.class)
                 .chatLanguageModel(modelA)
-                // 可选：添加上下文记忆功能
+                // 添加上下文记忆功能
                 .chatMemory(MessageWindowChatMemory.withMaxMessages(10))
                 .build();
     }

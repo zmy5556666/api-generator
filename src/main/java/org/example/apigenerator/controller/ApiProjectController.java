@@ -77,30 +77,55 @@ public class ApiProjectController {
     }
 
     /**
-     * 一键下载生成的 Controller 源码文件
+     * 一键下载生成的完整工程代码 (ZIP 包)
      */
     @GetMapping("/{taskId}/download")
-    public ResponseEntity<byte[]> downloadControllerCode(@PathVariable Long taskId) {
-        // 1. 复用刚才写好的查询逻辑，获取 API 设计结果
-        ApiDesignResult design = apiProjectService.getApiDesign(taskId);
-        String code = design.generatedControllerCode();
+    public ResponseEntity<byte[]> downloadProjectZip(@PathVariable Long taskId) {
+        try {
+            // 1. 获取包含多个文件的设计结果
+            ApiDesignResult design = apiProjectService.getApiDesign(taskId);
+            var files = design.generatedFiles();
 
-        // 2. 动态生成文件名，比如 moduleName 是 "shopping"，文件名就是 "ShoppingController.java"
-        String moduleName = design.moduleName() != null ? design.moduleName() : "Api";
-        // StringUtils.capitalize 可以把首字母大写
-        String fileName = StringUtils.capitalize(moduleName) + "Controller.java";
+            if (files == null || files.isEmpty()) {
+                return ResponseEntity.badRequest().body("文件列表为空".getBytes(StandardCharsets.UTF_8));
+            }
 
-        // 3. 构造 HTTP 响应头，告诉浏览器这是一个需要下载的附件
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentDispositionFormData("attachment", fileName);
-        // application/octet-stream 表示这是一个二进制流，强制浏览器下载
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            // 2. 在内存中创建一个 ZIP 压缩流
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            try (java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(baos)) {
+                for (var file : files) {
+                    // 处理路径：去掉可能存在的开头斜杠，防止解压路径异常
+                    String filePath = file.filePath();
+                    if (filePath.startsWith("/")) {
+                        filePath = filePath.substring(1);
+                    }
 
-        // 4. 将源码字符串转成字节数组，包装成 ResponseEntity 返回
-        return ResponseEntity
-                .ok()
-                .headers(headers)
-                .body(code.getBytes(StandardCharsets.UTF_8));
+                    // 将每个文件写入 ZIP 压缩包
+                    java.util.zip.ZipEntry entry = new java.util.zip.ZipEntry(filePath);
+                    zos.putNextEntry(entry);
+                    zos.write(file.codeContent().getBytes(StandardCharsets.UTF_8));
+                    zos.closeEntry();
+                }
+            }
+
+            // 3. 动态生成 ZIP 文件名
+            String moduleName = design.moduleName() != null ? design.moduleName() : "ai-project";
+            String fileName = moduleName + "-source-code.zip";
+
+            // 4. 设置 HTTP 响应头，强制浏览器作为附件下载 ZIP
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDispositionFormData("attachment", fileName);
+            headers.setContentType(MediaType.parseMediaType("application/zip"));
+
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .body(baos.toByteArray());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("打包下载失败".getBytes(StandardCharsets.UTF_8));
+        }
     }
 
     /**
