@@ -1,6 +1,7 @@
 package org.example.apigenerator.service;
 
 import org.example.apigenerator.agent.ApiArchitectAgent;
+import org.example.apigenerator.agent.CodeReviewerAgent;
 import org.example.apigenerator.agent.PrdAnalystAgent;
 import org.example.apigenerator.entity.ApiProjectTask;
 import org.example.apigenerator.entity.PrdAnalysisResultEntity;
@@ -14,23 +15,26 @@ import java.util.List;
 @Service
 public class ApiProjectService {
 
-    // 1. 彻底抛弃 Mapper，转而注入 2 个智能体 + 3 个专职领域 Service
+    // 1. 注入 3 个智能体 + 3 个专职领域 Service
     private final PrdAnalystAgent prdAnalystAgent;
     private final ApiArchitectAgent apiArchitectAgent;
     private final ProjectTaskService projectTaskService;
     private final AnalysisResultService analysisResultService;
     private final ApiDesignService apiDesignService;
+    private final CodeReviewerAgent codeReviewerAgent;
 
     public ApiProjectService(PrdAnalystAgent prdAnalystAgent,
                              ApiArchitectAgent apiArchitectAgent,
                              ProjectTaskService projectTaskService,
                              AnalysisResultService analysisResultService,
-                             ApiDesignService apiDesignService) {
+                             ApiDesignService apiDesignService,
+                             CodeReviewerAgent codeReviewerAgent) {
         this.prdAnalystAgent = prdAnalystAgent;
         this.apiArchitectAgent = apiArchitectAgent;
         this.projectTaskService = projectTaskService;
         this.analysisResultService = analysisResultService;
         this.apiDesignService = apiDesignService;
+        this.codeReviewerAgent = codeReviewerAgent;
     }
 
     /**
@@ -70,27 +74,32 @@ public class ApiProjectService {
     }
 
     /**
-     * 4. 核心流 B：执行 API 设计并级联保存
+     * 核心流 B: 执行 API 设计 (草稿) -> 代码审查 (定稿) -> 级联保存
      */
     @Transactional
     public ApiDesignResult generateApiDesign(Long taskId) {
-        // 获取前置分析结果
         PrdAnalysisResultEntity analysisResult = analysisResultService.getByTaskId(taskId);
         if (analysisResult == null) {
-            throw new IllegalArgumentException("未找到任务 ID 为 " + taskId + " 的分析结果，请先执行 PRD 分析！");
+            throw new IllegalArgumentException("未找到任务 ID为" + taskId + "的分析结果,请先执行PRD分析!");
         }
 
-        // 唤醒二号智能体
-        ApiDesignResult designResult = apiArchitectAgent.design(
+        // 第一步：唤醒二号智能体（架构师）生成草稿
+        System.out.println("====== [Phase 2] 架构师正在生成代码草稿... ======");
+        ApiDesignResult draftResult = apiArchitectAgent.design(
                 analysisResult.getCoreEntities(),
                 analysisResult.getCoreActions(),
                 analysisResult.getSummary()
         );
 
-        // 交给底层 Service 级联存储
-        apiDesignService.saveDesign(taskId, designResult);
+        // 第二步：唤醒三号智能体（技术总监）进行 Code Review 与修复
+        System.out.println("====== [Phase 2] Tech Lead 正在进行代码审查与修复... ======");
+        ApiDesignResult finalResult = codeReviewerAgent.review(draftResult);
 
-        return designResult;
+        // 第三步：交给底层 Service 级联存储最终定稿
+        apiDesignService.saveDesign(taskId, finalResult);
+        System.out.println("====== [Phase 2] 代码审查通过，最终版本已落库！ ======");
+
+        return finalResult;
     }
 
     /**

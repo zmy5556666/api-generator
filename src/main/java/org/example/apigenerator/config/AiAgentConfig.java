@@ -3,6 +3,7 @@ package org.example.apigenerator.config;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.service.AiServices;
+import org.example.apigenerator.agent.CodeReviewerAgent;
 import org.example.apigenerator.agent.PrdAnalystAgent;
 import org.example.apigenerator.agent.ApiArchitectAgent;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +48,21 @@ public class AiAgentConfig {
         // 2. 注册为 Bean
         return AiServices.builder(ApiArchitectAgent.class)
                 .chatLanguageModel(modelB)
+                .build();
+    }
+
+    // 在 AiAgentConfig 中补充注入 CodeReviewerAgent
+    @Bean
+    public CodeReviewerAgent codeReviewerAgent() {
+        OpenAiChatModel reviewerModel = OpenAiChatModel.builder()
+                .baseUrl("https://api.deepseek.com/v1")
+                .apiKey(agentBKey) // 可以复用智能体 B 的 Key
+                .modelName("deepseek-chat")
+                .temperature(0.1) // 降低发散性，保证代码修复的严谨度
+                .build();
+
+        return AiServices.builder(CodeReviewerAgent.class)
+                .chatLanguageModel(reviewerModel)
                 .build();
     }
 }
