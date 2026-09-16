@@ -159,20 +159,28 @@ public class ApiProjectController {
 
     // 2. 在类中添加这个新接口
     /**
-     * 触发沙盒编译与执行
+     * 触发沙盒编译与执行（带全自动自愈机制）
      */
     @PostMapping("/{taskId}/run")
     public ResponseEntity<String> runProjectInSandbox(@PathVariable Long taskId) {
-        // 获取当前任务的所有代码文件
+        // 1. 获取当前任务的所有代码文件
         ApiDesignResult design = apiProjectService.getApiDesign(taskId);
 
-        // 注意：这里必须开启一个新线程（或者用 @Async）去执行。
-        // 因为 Docker 编译可能要跑好几分钟，如果同步等，前端 HTTP 请求会直接超时死掉。
-        // 日志会通过 WebSocket 实时推回去，所以 HTTP 接口可以直接快速返回成功。
+        // 2. 开启新线程异步执行自愈沙盒
         new Thread(() -> {
-            dockerSandboxService.executeCode(taskId, design.generatedFiles());
+            try {
+                // 核心改变：调用新的自愈引擎，并接收它最终吐出的代码
+                ApiDesignResult finalDesign = dockerSandboxService.executeWithSelfHealing(taskId, design);
+
+                // 3. 将修复后的最终代码重新落库，覆盖旧代码
+                apiProjectService.saveUpdatedDesign(taskId, finalDesign);
+
+                System.out.println(">>> 任务ID [" + taskId + "] 的自愈代码已成功覆盖落库！");
+            } catch (Exception e) {
+                System.err.println("自愈沙盒执行或落库失败：" + e.getMessage());
+            }
         }).start();
 
-        return ResponseEntity.ok("沙盒启动指令已发送，准备接收 WebSocket 日志...");
+        return ResponseEntity.ok("自愈沙盒启动指令已发送，准备接收 WebSocket 日志...");
     }
 }

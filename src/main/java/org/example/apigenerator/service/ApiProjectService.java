@@ -138,4 +138,16 @@ public class ApiProjectService {
     public void renameProject(Long taskId, String newName) {
         projectTaskService.updateProjectName(taskId, newName);
     }
+
+    /**
+     * 9. 核心流C：保存自愈修复后的最新代码（覆盖旧数据）
+     */
+    @Transactional
+    public void saveUpdatedDesign(Long taskId, ApiDesignResult finalDesign) {
+        // 先清理掉该任务旧的生成记录和接口记录，防止数据库里出现双份数据
+        apiDesignService.deleteByTaskId(taskId);
+
+        // 把带着自愈修复代码的 finalDesign 重新级联保存进去
+        apiDesignService.saveDesign(taskId, finalDesign);
+    }
 }
