@@ -27,6 +27,8 @@ public class ApiProjectController {
 
     @Autowired
     private ApiProjectService apiProjectService;
+    @Autowired
+    private org.example.apigenerator.service.DockerSandboxService dockerSandboxService;
 
     /**
      * 接收前端传来的 PRD 文本，调用 AI 分析并存入数据库
@@ -153,5 +155,24 @@ public class ApiProjectController {
         // 调用总指挥的方法，而不是底层的 taskService
         apiProjectService.renameProject(taskId, newName);
         return ResponseEntity.ok("重命名成功");
+    }
+
+    // 2. 在类中添加这个新接口
+    /**
+     * 触发沙盒编译与执行
+     */
+    @PostMapping("/{taskId}/run")
+    public ResponseEntity<String> runProjectInSandbox(@PathVariable Long taskId) {
+        // 获取当前任务的所有代码文件
+        ApiDesignResult design = apiProjectService.getApiDesign(taskId);
+
+        // 注意：这里必须开启一个新线程（或者用 @Async）去执行。
+        // 因为 Docker 编译可能要跑好几分钟，如果同步等，前端 HTTP 请求会直接超时死掉。
+        // 日志会通过 WebSocket 实时推回去，所以 HTTP 接口可以直接快速返回成功。
+        new Thread(() -> {
+            dockerSandboxService.executeCode(taskId, design.generatedFiles());
+        }).start();
+
+        return ResponseEntity.ok("沙盒启动指令已发送，准备接收 WebSocket 日志...");
     }
 }

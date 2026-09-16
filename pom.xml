@@ -88,6 +88,25 @@
             <version>2.5.0</version>
         </dependency>
 
+        <!-- WebSocket：用于将 Docker 编译日志实时推送到前端 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <!-- Docker Java Client API -->
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java</artifactId>
+            <version>3.3.4</version>
+        </dependency>
+        <!-- Docker HTTP Transport -->
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-transport-zerodep</artifactId>
+            <version>3.3.4</version>
+        </dependency>
+
     </dependencies>
 
     <build>
